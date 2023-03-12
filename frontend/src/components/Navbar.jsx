@@ -99,6 +99,7 @@ const Navbar = () => {
           {currentUser ? (
             <User>
               <VideoCallOutlined onClick={() => setOpen(true)} />
+              {open && <Upload setOpen={setOpen} />}
               <Avatar />
               <Button onClick={userLogout}>Logout</Button>
               {currentUser.name}
@@ -116,7 +117,6 @@ const Navbar = () => {
           )}
         </Wrapper>
       </Container>
-      {open && <Upload setOpen={setOpen} />}
     </>
   );
 };

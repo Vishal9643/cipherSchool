@@ -6,6 +6,7 @@ import userRoutes from "./routes/User.js";
 import videoRoutes from "./routes/Video.js";
 import commentRoutes from "./routes/Comment.js";
 import authRoutes from "./routes/Auth.js";
+const PORT = process.env.PORT || 8000;
 
 const app = express();
 
@@ -39,7 +40,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(8000, () => {
+app.listen(PORT, () => {
   connect();
   console.log("Connected to server");
 });
