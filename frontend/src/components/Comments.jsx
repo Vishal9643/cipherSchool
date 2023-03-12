@@ -1,4 +1,6 @@
-import React from "react";
+import axios from "axios";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import styled from "styled-components";
 import Comment from "./Comment";
 
@@ -24,14 +26,23 @@ const Input = styled.input`
   width: 100%;
 `;
 
-const Comments = () => {
+const Comments = ({ videoId }) => {
+  const [comments, setComments] = useState([]);
+  const fetchComments = async () => {
+    try {
+      const res = await axios.get(`/comments/${videoId}`);
+    } catch (error) {}
+  };
+  const { currentUser } = useSelector((state) => state.user);
   return (
     <Container>
       <NewComment>
-        <Avatar src="https://png.pngtree.com/png-vector/20221018/ourmid/pngtree-youtube-social-media-round-icon-png-image_6315993.png" />
+        <Avatar src={currentUser.img} />
         <Input placeholder="Add a comment..." />
       </NewComment>
-      <Comment></Comment>
+      {comments.map((comment) => (
+        <Comment key={comment._id} comment={comment} />
+      ))}
     </Container>
   );
 };

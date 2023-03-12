@@ -1,11 +1,19 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
+import ThumbDownOutlinedIcon from "@mui/icons-material/ThumbDownOutlined";
 import ShareIcon from "@mui/icons-material/Share";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
 import Comments from "../components/Comments";
 import Card from "../components/Card";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+import axios from "axios";
+import { fetchSuccess, like, dislike } from "../redux/videoSlice";
+import { format } from "timeago.js";
+import { subscription } from "../redux/userSlice";
 
 const Container = styled.div`
   display: flex;
@@ -108,35 +116,83 @@ const Subscribe = styled.button`
   cursor: pointer;
 `;
 
+const VideoFrame = styled.video`
+  max-height: 720px;
+  width: 100%;
+  object-fit: cover;
+`;
+
 const Video = () => {
+  const { currentUser } = useSelector((state) => state.user);
+  const { currentVideo } = useSelector((state) => state.video);
+  console.log(currentUser);
+  console.log(currentVideo);
+
+  const dispatch = useDispatch();
+
+  const path = useLocation().pathname.split("/")[2];
+
+  const [channel, setChannel] = useState({});
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const videoRes = await axios.get(`/videos/find/${path}`);
+        const channelRes = await axios.get(
+          `/users/find/${videoRes.data.userId}`
+        );
+        setChannel(channelRes.data);
+        dispatch(fetchSuccess(videoRes.data));
+      } catch (err) {
+        return err;
+      }
+    };
+    fetchData();
+  }, [path, dispatch]);
+
+  const handleLike = async () => {
+    await axios.put(`/users/like/${currentVideo._id}`);
+    dispatch(like(currentUser._id));
+  };
+  const handleDislike = async () => {
+    await axios.put(`/users/dislike/${currentVideo._id}`);
+    dispatch(dislike(currentUser._id));
+  };
+
+  const handleSub = async () => {
+    currentUser.subscribedUser.includes(channel._id)
+      ? await axios.put(`/users/unsub/${channel._id}`)
+      : await axios.put(`/users/sub/${channel._id}`);
+    dispatch(subscription(channel._id));
+  };
+
   return (
     <Container>
       <Content>
         <VideoWrapper>
-          <iframe
-            width="900px"
-            height="600px"
-            src="https://www.youtube.com/embed/q8-rX-PNqog"
-            title="Proud Moment for India as Australian PM sends Message to China from INS Vikrant Aircraft Carrier"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-          ></iframe>
+          <VideoFrame src={currentVideo.videoUrl}></VideoFrame>
         </VideoWrapper>
-        <Title>
-          Proud Moment for India as Australian PM sends Message to China from
-          INS Vikrant Aircraft Carrier
-        </Title>
+        <Title>{currentVideo.title}</Title>
         <Details>
-          <Info>974,764 views • 14 hours ago </Info>
+          <Info>
+            {currentVideo.views} views • {format(currentVideo.createAt)}{" "}
+          </Info>
           <Buttons>
-            <Button>
-              <ThumbUpIcon />
-              123
+            <Button onClick={handleLike}>
+              {currentVideo.likes?.includes(currentUser._id) ? (
+                <ThumbUpIcon />
+              ) : (
+                <ThumbUpOutlinedIcon />
+              )}
+              {currentVideo.likes?.length}
             </Button>
-            <Button>
-              <ThumbDownIcon />
-              Dislike
+            <Button onClick={handleDislike}>
+              {currentVideo.dislikes?.includes(currentUser._id) ? (
+                <ThumbDownIcon />
+              ) : (
+                <ThumbDownOutlinedIcon />
+              )}
+              {currentVideo.dislikes?.length}
             </Button>
             <Button>
               <SubscriptionsIcon />
@@ -149,26 +205,26 @@ const Video = () => {
           </Buttons>
         </Details>
         <Hr />
+
         <Channel>
           <ChannelInfo>
-            <ChannelImage src="https://png.pngtree.com/png-vector/20221018/ourmid/pngtree-youtube-social-media-round-icon-png-image_6315993.png" />
+            <ChannelImage src={channel.img} />
             <ChannelDetail>
-              <ChannelName>Test Channel</ChannelName>
-              <ChannelCounter>654K Subscriber</ChannelCounter>
-              <Description>
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has been the industry's standard dummy
-                text ever since the 1500s, when an unknown printer took a galley
-                of type and scrambled it to make a type specimen book.
-              </Description>
+              <ChannelName>{channel.name}</ChannelName>
+              <ChannelCounter>{channel.subscriber} Subscriber</ChannelCounter>
+              <Description>{currentVideo.description}</Description>
             </ChannelDetail>
           </ChannelInfo>
-          <Subscribe>SUBSCRIBE</Subscribe>
+          <Subscribe onClick={handleSub}>
+            {currentUser.subscribedUsers?.includes(channel._id)
+              ? "SUBSCRIBED"
+              : "SUBSCRIBE"}
+          </Subscribe>
         </Channel>
         <Hr />
-        <Comments />
+        <Comments videoId={currentVideo._id} />
       </Content>
-      <Recommendation>
+      {/* <Recommendation>
         <Card type="sm" />
         <Card type="sm" />
         <Card type="sm" />
@@ -182,7 +238,7 @@ const Video = () => {
         <Card type="sm" />
         <Card type="sm" />
         <Card type="sm" />
-      </Recommendation>
+      </Recommendation> */}
     </Container>
   );
 };

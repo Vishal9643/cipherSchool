@@ -19,6 +19,7 @@ import HelpIcon from "@mui/icons-material/Help";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Container = styled.div`
   flex: 1;
@@ -87,30 +88,37 @@ const Title = styled.h2`
 `;
 
 const Menu = ({ darkMode, setDarkMode }) => {
+  const { currentUser } = useSelector((state) => state.user);
   return (
     <Container>
       <Wrapper>
-        <Link
-          to="/video/test"
-          style={{ textDecoration: "none", color: "inherit" }}
-        >
+        <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
           <Logo>
             <VideoCameraBackIcon />
-            VideoServer
+            CipherSchools
           </Logo>
         </Link>
-        <Item>
-          <HomeIcon />
-          Home
-        </Item>
-        <Item>
-          <ExploreIcon />
-          Explore
-        </Item>
-        <Item>
-          <SubscriptionsIcon />
-          Subscriptions
-        </Item>
+        <Link to="home" style={{ textDecoration: "none", color: "inherit" }}>
+          <Item>
+            <HomeIcon />
+            Home
+          </Item>
+        </Link>
+        <Link to="trends" style={{ textDecoration: "none", color: "inherit" }}>
+          <Item>
+            <ExploreIcon />
+            Explore
+          </Item>
+        </Link>
+        <Link
+          to="subscription"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <Item>
+            <SubscriptionsIcon />
+            Subscriptions
+          </Item>
+        </Link>
         <Hr />
         <Item>
           <LibraryAddIcon />
@@ -121,19 +129,23 @@ const Menu = ({ darkMode, setDarkMode }) => {
           History
         </Item>
         <Hr />
-        <Login>
-          Sign in to like the video, comment and subscribe.
-          <Link
-            to="signin"
-            style={{ textDecoration: "none", color: "inherit" }}
-          >
-            <Button>
-              <AccountCircleIcon />
-              Sign In
-            </Button>
-          </Link>
-        </Login>
-        <Hr />
+        {!currentUser && (
+          <>
+            <Login>
+              Sign in to like the video, comment and subscribe.
+              <Link
+                to="signin"
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                <Button>
+                  <AccountCircleIcon />
+                  Sign In
+                </Button>
+              </Link>
+            </Login>
+            <Hr />
+          </>
+        )}
         <Title>Best of VideoServer</Title>
         <Item>
           <LibraryMusicIcon />

@@ -1,4 +1,5 @@
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -37,19 +38,24 @@ const Text = styled.span`
   color: ${({ theme }) => theme.text};
 `;
 
-const Comment = () => {
+const Comment = ({ comment }) => {
+  const [channel, setChannel] = useState({});
+
+  useEffect(() => {
+    const fetchComment = async () => {
+      const res = await axios.get(`/users/find/${comment.userId}`);
+      setChannel(res.data);
+    };
+    fetchComment();
+  }, [comment.userId]);
+
   return (
     <Container>
-      <Avatar src="https://png.pngtree.com/png-vector/20221018/ourmid/pngtree-youtube-social-media-round-icon-png-image_6315993.png" />
+      <Avatar src={channel.img} />
       <Details>
-        <Name>Vishal</Name>
+        <Name>{channel.name}</Name>
         <Date>1 Day ago</Date>
-        <Text>
-          Lorem Ipsum is simply dummy text of the printing and typesetting
-          industry. Lorem Ipsum has been the industry's standard dummy text ever
-          since the 1500s, when an unknown printer took a galley of type and
-          scrambled it to make a type specimen book.
-        </Text>
+        <Text>{comment.description}</Text>
       </Details>
     </Container>
   );
